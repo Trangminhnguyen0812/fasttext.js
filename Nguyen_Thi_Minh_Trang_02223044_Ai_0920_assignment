@@ -1,0 +1,432 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "collapsed_sections": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "accelerator": "GPU"
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "WDBw_Bqomadu"
+      },
+      "source": [
+        "import nltk"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "D3brc7namf_W",
+        "outputId": "eaf89d5f-684e-4416-e6c3-0b2962e36b08"
+      },
+      "source": [
+        "nltk.download('punkt')"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "[nltk_data] Downloading package punkt to /root/nltk_data...\n",
+            "[nltk_data]   Unzipping tokenizers/punkt.zip.\n"
+          ],
+          "name": "stdout"
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "True"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 2
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "9PcnK-XHmhjL"
+      },
+      "source": [
+        "import urllib.request\n",
+        "import zipfile\n",
+        "from lxml import etree\n",
+        "import re\n",
+        "from nltk.tokenize import word_tokenize, sent_tokenize"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Fkz2ltuImr8V",
+        "outputId": "ae1f5a33-ee00-48b4-ba86-18e23db56cbc"
+      },
+      "source": [
+        "urllib.request.urlretrieve(\"https://raw.githubusercontent.com/GaoleMeng/RNN-and-FFNN-textClassification/master/ted_en-20160408.xml\", filename=\"ted_en-20160408.xml\")"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "('ted_en-20160408.xml', <http.client.HTTPMessage at 0x7f1247ce7278>)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 4
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "WTQ2hv6CmvBd"
+      },
+      "source": [
+        "targetXML=open('ted_en-20160408.xml', 'r', encoding='UTF8')\n",
+        "target_text = etree.parse(targetXML)\n",
+        "\n",
+        "# select the contents between tags of <content> and </content> from original file\n",
+        "parse_text = '\\n'.join(target_text.xpath('//content/text()'))\n",
+        "\n",
+        "# remove unnecessary contents\n",
+        "content_text = re.sub(r'\\([^)]*\\)', '', parse_text)\n",
+        "sent_text = sent_tokenize(content_text)\n",
+        "\n",
+        "# remove . and transform all to lower case\n",
+        "normalized_text = []\n",
+        "for string in sent_text:\n",
+        "     tokens = re.sub(r\"[^a-z0-9]+\", \" \", string.lower())\n",
+        "     normalized_text.append(tokens)\n",
+        "\n",
+        "# tokenization\n",
+        "result = [word_tokenize(sentence) for sentence in normalized_text]"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "8hbkwK-_m35k",
+        "outputId": "8d5c7ed8-57ae-456e-f80c-e0ba455156ed"
+      },
+      "source": [
+        "print('Total number of sames : {}'.format(len(result)))"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "총 샘플의 개수 : 273424\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "FIVjreKqm9iw",
+        "outputId": "1680051f-8f9a-4451-8ef3-faff8ab7e1e8"
+      },
+      "source": [
+        "for line in result[:3]:\n",
+        "    print(line)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "['here', 'are', 'two', 'reasons', 'companies', 'fail', 'they', 'only', 'do', 'more', 'of', 'the', 'same', 'or', 'they', 'only', 'do', 'what', 's', 'new']\n",
+            "['to', 'me', 'the', 'real', 'real', 'solution', 'to', 'quality', 'growth', 'is', 'figuring', 'out', 'the', 'balance', 'between', 'two', 'activities', 'exploration', 'and', 'exploitation']\n",
+            "['both', 'are', 'necessary', 'but', 'it', 'can', 'be', 'too', 'much', 'of', 'a', 'good', 'thing']\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "OnvMCIg3m_eQ"
+      },
+      "source": [
+        "from gensim.models import FastText"
+      ],
+      "execution_count": 5,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "model = FastText(sentences=result, size=100, window=5, min_count=5, workers=4, sg=1)"
+      ],
+      "metadata": {
+        "id": "0QeLv2fTaXYI"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "jT183xr5nB1c",
+        "outputId": "b362998f-e0ec-4871-ac32-395a30cb1778"
+      },
+      "source": [
+        "model_result = model.wv.most_similar(\"man\")\n",
+        "print(model_result)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "[('batman', 0.8007631301879883), ('woman', 0.794669508934021), ('ekman', 0.7797814607620239), ('hoffman', 0.7764872908592224), ('kahneman', 0.7652518153190613), ('lehman', 0.7625967860221863), ('shaman', 0.7619239091873169), ('foreman', 0.7585022449493408), ('fireman', 0.7528881430625916), ('newman', 0.7361328601837158)]\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "pyGA2n0Od5vG",
+        "outputId": "d9e439ca-2662-4238-8a79-8d1b51b4c33b"
+      },
+      "source": [
+        "model.wv.most_similar(\"electrofishing\")"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "[('electrolux', 0.7975021600723267),\n",
+              " ('electro', 0.796866238117218),\n",
+              " ('electrolyte', 0.795754075050354),\n",
+              " ('electric', 0.7786502838134766),\n",
+              " ('electrochemical', 0.7621917724609375),\n",
+              " ('electroshock', 0.760723352432251),\n",
+              " ('airbus', 0.7531217336654663),\n",
+              " ('electrogram', 0.7521096467971802),\n",
+              " ('electron', 0.7452462911605835),\n",
+              " ('gastric', 0.7437772154808044)]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 11
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "fhqXb_pCnKjh"
+      },
+      "source": [
+        "from os import path\n",
+        "from google.colab import drive"
+      ],
+      "execution_count": 1,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "V5KpmvN-ncTQ",
+        "outputId": "83255763-f3d3-420a-ad3a-78d0b1f7944b"
+      },
+      "source": [
+        "drive.mount('/content/gdrive')"
+      ],
+      "execution_count": 2,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Mounted at /content/gdrive\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "P1I0_epJnsWE"
+      },
+      "source": [
+        "mypath = './gdrive/My Drive/NLP_Example/Data'"
+      ],
+      "execution_count": 3,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "AhirKT6Vg2GD"
+      },
+      "source": [
+        "model.save(path.join(mypath, 'eng_fasttext'))"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "CPIggie3g2Dh"
+      },
+      "source": [],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "2dZCNB3wnXMS"
+      },
+      "source": [
+        "loaded_model = FastText.load(path.join(mypath, 'eng_fasttext')) # 모델 로드"
+      ],
+      "execution_count": 6,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "9txt01xXnXJ6",
+        "outputId": "d847b112-1726-4f67-80c2-0d2ab93f9f58"
+      },
+      "source": [
+        "loaded_model.wv.most_similar(\"man\")"
+      ],
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "[('batman', 0.8007631301879883),\n",
+              " ('woman', 0.794669508934021),\n",
+              " ('ekman', 0.7797814607620239),\n",
+              " ('hoffman', 0.7764872908592224),\n",
+              " ('kahneman', 0.7652518153190613),\n",
+              " ('lehman', 0.7625967860221863),\n",
+              " ('shaman', 0.7619239091873169),\n",
+              " ('foreman', 0.7585022449493408),\n",
+              " ('fireman', 0.7528881430625916),\n",
+              " ('newman', 0.7361328601837158)]"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 7
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "nnkRbilCew89",
+        "outputId": "1dd89846-66dc-44e9-fa11-c879cfc2fc0b"
+      },
+      "source": [
+        "loaded_model.wv.most_similar(\"electrolux\")"
+      ],
+      "execution_count": 8,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "[('electrolyte', 0.9865883588790894),\n",
+              " ('electro', 0.9785528182983398),\n",
+              " ('electrode', 0.9558806419372559),\n",
+              " ('electron', 0.9493178129196167),\n",
+              " ('electroshock', 0.9334187507629395),\n",
+              " ('electrogram', 0.9283804297447205),\n",
+              " ('electrodes', 0.9187707901000977),\n",
+              " ('electrons', 0.9173820614814758),\n",
+              " ('electronic', 0.9073201417922974),\n",
+              " ('electromagnet', 0.8979630470275879)]"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 8
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "93PTc97BnXG6"
+      },
+      "source": [],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "ULXTl8N4nXD7"
+      },
+      "source": [],
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
